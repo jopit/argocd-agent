@@ -75,6 +75,46 @@ func (suite *FixtureTestSuite) SetupSuite() {
 	}
 	err = kclient.Create(ctx, &app, metav1.CreateOptions{})
 	requires.Nil(err)
+
+	app = argoapp.Application{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "guestbook1",
+			Namespace: "test-argocd-agent",
+		},
+		Spec: argoapp.ApplicationSpec{
+			Source: &argoapp.ApplicationSource{
+				RepoURL:        "https://github.com/argoproj/argocd-example-apps",
+				TargetRevision: "HEAD",
+				Path:           "kustomize-guestbook",
+			},
+			Destination: argoapp.ApplicationDestination{
+				Server:    "https://kubernetes.default.svc",
+				Namespace: "foo",
+			},
+		},
+	}
+	err = kclient.Create(ctx, &app, metav1.CreateOptions{})
+	requires.Nil(err)
+
+	app = argoapp.Application{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "guestbook2",
+			Namespace: "test-argocd-agent",
+		},
+		Spec: argoapp.ApplicationSpec{
+			Source: &argoapp.ApplicationSource{
+				RepoURL:        "https://github.com/argoproj/argocd-example-apps",
+				TargetRevision: "HEAD",
+				Path:           "kustomize-guestbook",
+			},
+			Destination: argoapp.ApplicationDestination{
+				Server:    "https://kubernetes.default.svc",
+				Namespace: "foo",
+			},
+		},
+	}
+	err = kclient.Create(ctx, &app, metav1.CreateOptions{})
+	requires.Nil(err)
 }
 
 func (suite *FixtureTestSuite) TearDownSuite() {
@@ -90,6 +130,24 @@ func (suite *FixtureTestSuite) TearDownSuite() {
 	app := argoapp.Application{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "guestbook",
+			Namespace: "test-argocd-agent",
+		},
+	}
+	err = kclient.Delete(ctx, &app, metav1.DeleteOptions{})
+	requires.Nil(err)
+
+	app = argoapp.Application{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "guestbook1",
+			Namespace: "test-argocd-agent",
+		},
+	}
+	err = kclient.Delete(ctx, &app, metav1.DeleteOptions{})
+	requires.Nil(err)
+
+	app = argoapp.Application{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "guestbook2",
 			Namespace: "test-argocd-agent",
 		},
 	}
@@ -371,7 +429,7 @@ func (suite *FixtureTestSuite) Test_List_Applications() {
 	list := argoapp.ApplicationList{}
 	err = kclient.List(ctx, "test-argocd-agent", &list, metav1.ListOptions{})
 	requires.Nil(err)
-	requires.NotEmpty(list)
+	requires.Len(list.Items, 3)
 }
 
 func TestFixtureTestSuite(t *testing.T) {
