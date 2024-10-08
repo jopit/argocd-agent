@@ -31,7 +31,7 @@ type BasicTestSuite struct {
 	suite.Suite
 }
 
-func (suite *BasicTestSuite) Test_1_Agent_Managed() {
+func (suite *BasicTestSuite) Test_Agent_Managed() {
 	requires := suite.Require()
 
 	ctx := context.Background()
@@ -94,7 +94,7 @@ func (suite *BasicTestSuite) Test_1_Agent_Managed() {
 	}, 30*time.Second, 1*time.Second)
 }
 
-func (suite *BasicTestSuite) Test_2_Agent_Autonomous() {
+func (suite *BasicTestSuite) Test_Agent_Autonomous() {
 	requires := suite.Require()
 
 	ctx := context.Background()
