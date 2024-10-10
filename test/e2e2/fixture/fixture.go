@@ -242,6 +242,30 @@ func (c kubeClient) Update(ctx context.Context, object KubeObject, options metav
 	return err
 }
 
+func (c kubeClient) Patch(ctx context.Context, object KubeObject, jsonPatch []interface{}, options metav1.PatchOptions) error {
+	resource, err := c.resourceFor(object)
+	if err != nil {
+		return err
+	}
+
+	payload, err := json.Marshal(jsonPatch)
+	if err != nil {
+		return err
+	}
+
+	result, err := c.dclient.Resource(resource).Namespace(object.GetNamespace()).Patch(ctx, object.GetName(), types.JSONPatchType, payload, options)
+	if err != nil {
+		return err
+	}
+
+	b, err := result.MarshalJSON()
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(b, object)
+	return err
+}
+
 func (c kubeClient) Delete(ctx context.Context, object KubeObject, options metav1.DeleteOptions) error {
 	resource, err := c.resourceFor(object)
 	if err != nil {
