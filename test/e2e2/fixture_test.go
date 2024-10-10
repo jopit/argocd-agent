@@ -399,6 +399,7 @@ func (suite *FixtureTestSuite) Test_Update_Application() {
 	requires.Nil(err)
 	requires.Equal("foo", app.Name)
 	requires.Equal("Application", app.Kind)
+	requires.Equal("HEAD", app.Spec.Source.TargetRevision)
 	requires.NotEmpty(app.UID)
 
 	app.Spec.Source.TargetRevision = "TAIL"
@@ -430,6 +431,66 @@ func (suite *FixtureTestSuite) Test_List_Applications() {
 	err = kclient.List(ctx, "test-argocd-agent", &list, metav1.ListOptions{})
 	requires.Nil(err)
 	requires.Len(list.Items, 3)
+}
+
+func (suite *FixtureTestSuite) Test_Patch_Application() {
+	requires := suite.Require()
+
+	ctx := context.Background()
+
+	config, err := fixture.GetSystemKubeConfig("")
+	requires.Nil(err)
+
+	kclient, err := fixture.NewKubeClient(config)
+	requires.Nil(err)
+
+	app := argoapp.Application{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "foo",
+			Namespace: "test-argocd-agent",
+		},
+		Spec: argoapp.ApplicationSpec{
+			Source: &argoapp.ApplicationSource{
+				RepoURL:        "https://github.com/argoproj/argocd-example-apps",
+				TargetRevision: "HEAD",
+				Path:           "kustomize-guestbook",
+			},
+			Destination: argoapp.ApplicationDestination{
+				Server:    "https://kubernetes.default.svc",
+				Namespace: "foo",
+			},
+		},
+	}
+	err = kclient.Create(ctx, &app, metav1.CreateOptions{})
+	requires.Nil(err)
+	requires.Equal("foo", app.Name)
+	requires.Equal("Application", app.Kind)
+	requires.Equal("HEAD", app.Spec.Source.TargetRevision)
+	requires.NotEmpty(app.UID)
+
+	app = argoapp.Application{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "foo",
+			Namespace: "test-argocd-agent",
+		},
+	}
+	err = kclient.Patch(ctx, &app, []interface{}{
+		map[string]interface{}{
+			"op":    "replace",
+			"path":  "/spec/source/targetRevision",
+			"value": "TAIL",
+		},
+	}, metav1.PatchOptions{})
+	requires.Nil(err)
+	requires.Equal("TAIL", app.Spec.Source.TargetRevision)
+
+	app = argoapp.Application{}
+	err = kclient.Get(ctx, types.NamespacedName{Namespace: "test-argocd-agent", Name: "foo"}, &app, metav1.GetOptions{})
+	requires.Nil(err)
+	requires.Equal("TAIL", app.Spec.Source.TargetRevision)
+
+	err = kclient.Delete(ctx, &app, metav1.DeleteOptions{})
+	requires.Nil(err)
 }
 
 func TestFixtureTestSuite(t *testing.T) {
