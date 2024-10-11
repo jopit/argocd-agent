@@ -44,9 +44,9 @@ func (suite *FixtureTestSuite) SetupSuite() {
 	ctx := context.Background()
 
 	config, err := fixture.GetSystemKubeConfig("")
-	requires.Nil(err)
+	requires.NoError(err)
 	kclient, err := fixture.NewKubeClient(config)
-	requires.Nil(err)
+	requires.NoError(err)
 
 	namespace := corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
@@ -54,7 +54,7 @@ func (suite *FixtureTestSuite) SetupSuite() {
 		},
 	}
 	err = kclient.Create(ctx, &namespace, metav1.CreateOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 
 	app := argoapp.Application{
 		ObjectMeta: metav1.ObjectMeta{
@@ -74,7 +74,7 @@ func (suite *FixtureTestSuite) SetupSuite() {
 		},
 	}
 	err = kclient.Create(ctx, &app, metav1.CreateOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 
 	app = argoapp.Application{
 		ObjectMeta: metav1.ObjectMeta{
@@ -94,7 +94,7 @@ func (suite *FixtureTestSuite) SetupSuite() {
 		},
 	}
 	err = kclient.Create(ctx, &app, metav1.CreateOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 
 	app = argoapp.Application{
 		ObjectMeta: metav1.ObjectMeta{
@@ -114,7 +114,7 @@ func (suite *FixtureTestSuite) SetupSuite() {
 		},
 	}
 	err = kclient.Create(ctx, &app, metav1.CreateOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 }
 
 func (suite *FixtureTestSuite) TearDownSuite() {
@@ -123,9 +123,9 @@ func (suite *FixtureTestSuite) TearDownSuite() {
 	ctx := context.Background()
 
 	config, err := fixture.GetSystemKubeConfig("")
-	requires.Nil(err)
+	requires.NoError(err)
 	kclient, err := fixture.NewKubeClient(config)
-	requires.Nil(err)
+	requires.NoError(err)
 
 	app := argoapp.Application{
 		ObjectMeta: metav1.ObjectMeta{
@@ -134,7 +134,7 @@ func (suite *FixtureTestSuite) TearDownSuite() {
 		},
 	}
 	err = kclient.Delete(ctx, &app, metav1.DeleteOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 
 	app = argoapp.Application{
 		ObjectMeta: metav1.ObjectMeta{
@@ -143,7 +143,7 @@ func (suite *FixtureTestSuite) TearDownSuite() {
 		},
 	}
 	err = kclient.Delete(ctx, &app, metav1.DeleteOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 
 	app = argoapp.Application{
 		ObjectMeta: metav1.ObjectMeta{
@@ -152,7 +152,7 @@ func (suite *FixtureTestSuite) TearDownSuite() {
 		},
 	}
 	err = kclient.Delete(ctx, &app, metav1.DeleteOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 
 	namespace := corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
@@ -160,7 +160,7 @@ func (suite *FixtureTestSuite) TearDownSuite() {
 		},
 	}
 	err = kclient.Delete(ctx, &namespace, metav1.DeleteOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 }
 
 func (suite *FixtureTestSuite) Test_Sanity() {
@@ -172,11 +172,11 @@ func (suite *FixtureTestSuite) Test_KubeConfig() {
 	requires := suite.Require()
 
 	config, err := fixture.GetSystemKubeConfig("")
-	requires.Nil(err)
+	requires.NoError(err)
 	requires.NotNil(config)
 
 	kclient, err := kubernetes.NewForConfig(config)
-	requires.Nil(err)
+	requires.NoError(err)
 	requires.NotNil(kclient)
 }
 
@@ -184,10 +184,10 @@ func (suite *FixtureTestSuite) Test_Get_Application_Via_Dynamic() {
 	requires := suite.Require()
 
 	config, err := fixture.GetSystemKubeConfig("")
-	requires.Nil(err)
+	requires.NoError(err)
 
 	dclient, err := dynamic.NewForConfig(config)
-	requires.Nil(err)
+	requires.NoError(err)
 
 	appResource := schema.GroupVersionResource{
 		Group:    "argoproj.io",
@@ -198,14 +198,14 @@ func (suite *FixtureTestSuite) Test_Get_Application_Via_Dynamic() {
 	ctx := context.Background()
 
 	unstructuredApp, err := dclient.Resource(appResource).Namespace("test-argocd-agent").Get(ctx, "guestbook", metav1.GetOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 
 	b, err := unstructuredApp.MarshalJSON()
-	requires.Nil(err)
+	requires.NoError(err)
 	requires.NotNil(b)
 	app := argoapp.Application{}
 	err = json.Unmarshal(b, &app)
-	requires.Nil(err)
+	requires.NoError(err)
 	requires.Equal("Application", app.Kind)
 }
 
@@ -213,10 +213,10 @@ func (suite *FixtureTestSuite) Test_List_Application_Via_Dynamic() {
 	requires := suite.Require()
 
 	config, err := fixture.GetSystemKubeConfig("")
-	requires.Nil(err)
+	requires.NoError(err)
 
 	dclient, err := dynamic.NewForConfig(config)
-	requires.Nil(err)
+	requires.NoError(err)
 
 	appResource := schema.GroupVersionResource{
 		Group:    "argoproj.io",
@@ -227,15 +227,15 @@ func (suite *FixtureTestSuite) Test_List_Application_Via_Dynamic() {
 	ctx := context.Background()
 
 	ulist, err := dclient.Resource(appResource).Namespace("test-argocd-agent").List(ctx, metav1.ListOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 
 	b, err := ulist.MarshalJSON()
-	requires.Nil(err)
+	requires.NoError(err)
 	requires.NotNil(b)
 
 	list := argoapp.ApplicationList{}
 	err = json.Unmarshal(b, &list)
-	requires.Nil(err)
+	requires.NoError(err)
 	requires.NotEmpty(list)
 }
 
@@ -245,44 +245,44 @@ func (suite *FixtureTestSuite) Test_Get_Application_Via_RESTMapper() {
 	ctx := context.Background()
 
 	config, err := fixture.GetSystemKubeConfig("")
-	requires.Nil(err)
+	requires.NoError(err)
 
 	scheme := runtime.NewScheme()
 	argoapp.AddToScheme(scheme)
 
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
-	requires.Nil(err)
+	requires.NoError(err)
 	groupResources, err := restmapper.GetAPIGroupResources(discoveryClient)
-	requires.Nil(err)
+	requires.NoError(err)
 
 	mapper := restmapper.NewDiscoveryRESTMapper(groupResources)
 
 	app := argoapp.Application{}
 
 	gvks, unversioned, err := scheme.ObjectKinds(&app)
-	requires.Nil(err)
+	requires.NoError(err)
 	requires.False(unversioned)
 	requires.NotEmpty(gvks)
 
 	mapping, err := mapper.RESTMapping(gvks[0].GroupKind())
-	requires.Nil(err)
+	requires.NoError(err)
 
 	requires.Equal("argoproj.io", mapping.Resource.Group)
 	requires.Equal("v1alpha1", mapping.Resource.Version)
 	requires.Equal("applications", mapping.Resource.Resource)
 
 	dclient, err := dynamic.NewForConfig(config)
-	requires.Nil(err)
+	requires.NoError(err)
 
 	unstructuredApp, err := dclient.Resource(mapping.Resource).Namespace("test-argocd-agent").Get(ctx, "guestbook", metav1.GetOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 
 	b, err := unstructuredApp.MarshalJSON()
-	requires.Nil(err)
+	requires.NoError(err)
 	requires.NotEmpty(b)
 	app = argoapp.Application{}
 	err = json.Unmarshal(b, &app)
-	requires.Nil(err)
+	requires.NoError(err)
 	requires.Equal("Application", app.Kind)
 }
 
@@ -292,26 +292,26 @@ func (suite *FixtureTestSuite) Test_Get() {
 	ctx := context.Background()
 
 	config, err := fixture.GetSystemKubeConfig("")
-	requires.Nil(err)
+	requires.NoError(err)
 
 	kclient, err := fixture.NewKubeClient(config)
-	requires.Nil(err)
+	requires.NoError(err)
 
 	app := argoapp.Application{}
 	err = kclient.Get(ctx, types.NamespacedName{Namespace: "test-argocd-agent", Name: "guestbook"}, &app, metav1.GetOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 	requires.Equal("guestbook", app.Name)
 	requires.Equal("Application", app.Kind)
 
 	app = argoapp.Application{}
 	err = kclient.Get(ctx, types.NamespacedName{Namespace: "test-argocd-agent", Name: "guestbook"}, &app, metav1.GetOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 	requires.Equal("guestbook", app.Name)
 	requires.Equal("Application", app.Kind)
 
 	ns := corev1.Namespace{}
 	err = kclient.Get(ctx, types.NamespacedName{Namespace: "", Name: "test-argocd-agent"}, &ns, metav1.GetOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 	requires.Equal("test-argocd-agent", ns.Name)
 }
 
@@ -321,10 +321,10 @@ func (suite *FixtureTestSuite) Test_Create_Get_Delete_Application() {
 	ctx := context.Background()
 
 	config, err := fixture.GetSystemKubeConfig("")
-	requires.Nil(err)
+	requires.NoError(err)
 
 	kclient, err := fixture.NewKubeClient(config)
-	requires.Nil(err)
+	requires.NoError(err)
 
 	app := argoapp.Application{
 		ObjectMeta: metav1.ObjectMeta{
@@ -340,14 +340,14 @@ func (suite *FixtureTestSuite) Test_Create_Get_Delete_Application() {
 	}
 
 	err = kclient.Create(ctx, &app, metav1.CreateOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 	requires.Equal("foo", app.Name)
 	requires.Equal("Application", app.Kind)
 	requires.NotEmpty(app.UID)
 
 	app = argoapp.Application{}
 	err = kclient.Get(ctx, types.NamespacedName{Namespace: "test-argocd-agent", Name: "foo"}, &app, metav1.GetOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 	requires.Equal("foo", app.Name)
 	requires.Equal("Application", app.Kind)
 	requires.NotEmpty(app.UID)
@@ -359,7 +359,7 @@ func (suite *FixtureTestSuite) Test_Create_Get_Delete_Application() {
 		},
 	}
 	err = kclient.Delete(ctx, &app, metav1.DeleteOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 
 	app = argoapp.Application{}
 	err = kclient.Get(ctx, types.NamespacedName{Namespace: "test-argocd-agent", Name: "foo"}, &app, metav1.GetOptions{})
@@ -373,10 +373,10 @@ func (suite *FixtureTestSuite) Test_Update_Application() {
 	ctx := context.Background()
 
 	config, err := fixture.GetSystemKubeConfig("")
-	requires.Nil(err)
+	requires.NoError(err)
 
 	kclient, err := fixture.NewKubeClient(config)
-	requires.Nil(err)
+	requires.NoError(err)
 
 	app := argoapp.Application{
 		ObjectMeta: metav1.ObjectMeta{
@@ -396,7 +396,7 @@ func (suite *FixtureTestSuite) Test_Update_Application() {
 		},
 	}
 	err = kclient.Create(ctx, &app, metav1.CreateOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 	requires.Equal("foo", app.Name)
 	requires.Equal("Application", app.Kind)
 	requires.Equal("HEAD", app.Spec.Source.TargetRevision)
@@ -404,16 +404,16 @@ func (suite *FixtureTestSuite) Test_Update_Application() {
 
 	app.Spec.Source.TargetRevision = "TAIL"
 	err = kclient.Update(ctx, &app, metav1.UpdateOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 	requires.Equal("TAIL", app.Spec.Source.TargetRevision)
 
 	app = argoapp.Application{}
 	err = kclient.Get(ctx, types.NamespacedName{Namespace: "test-argocd-agent", Name: "foo"}, &app, metav1.GetOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 	requires.Equal("TAIL", app.Spec.Source.TargetRevision)
 
 	err = kclient.Delete(ctx, &app, metav1.DeleteOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 }
 
 func (suite *FixtureTestSuite) Test_List_Applications() {
@@ -422,14 +422,14 @@ func (suite *FixtureTestSuite) Test_List_Applications() {
 	ctx := context.Background()
 
 	config, err := fixture.GetSystemKubeConfig("")
-	requires.Nil(err)
+	requires.NoError(err)
 
 	kclient, err := fixture.NewKubeClient(config)
-	requires.Nil(err)
+	requires.NoError(err)
 
 	list := argoapp.ApplicationList{}
 	err = kclient.List(ctx, "test-argocd-agent", &list, metav1.ListOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 	requires.Len(list.Items, 3)
 }
 
@@ -439,10 +439,10 @@ func (suite *FixtureTestSuite) Test_Patch_Application() {
 	ctx := context.Background()
 
 	config, err := fixture.GetSystemKubeConfig("")
-	requires.Nil(err)
+	requires.NoError(err)
 
 	kclient, err := fixture.NewKubeClient(config)
-	requires.Nil(err)
+	requires.NoError(err)
 
 	app := argoapp.Application{
 		ObjectMeta: metav1.ObjectMeta{
@@ -462,7 +462,7 @@ func (suite *FixtureTestSuite) Test_Patch_Application() {
 		},
 	}
 	err = kclient.Create(ctx, &app, metav1.CreateOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 	requires.Equal("foo", app.Name)
 	requires.Equal("Application", app.Kind)
 	requires.Equal("HEAD", app.Spec.Source.TargetRevision)
@@ -481,16 +481,16 @@ func (suite *FixtureTestSuite) Test_Patch_Application() {
 			"value": "TAIL",
 		},
 	}, metav1.PatchOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 	requires.Equal("TAIL", app.Spec.Source.TargetRevision)
 
 	app = argoapp.Application{}
 	err = kclient.Get(ctx, types.NamespacedName{Namespace: "test-argocd-agent", Name: "foo"}, &app, metav1.GetOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 	requires.Equal("TAIL", app.Spec.Source.TargetRevision)
 
 	err = kclient.Delete(ctx, &app, metav1.DeleteOptions{})
-	requires.Nil(err)
+	requires.NoError(err)
 }
 
 func TestFixtureTestSuite(t *testing.T) {
