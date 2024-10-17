@@ -21,7 +21,9 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-// Retrieve the system-level Kubernetes config (e.g. ~/.kube/config)
+// GetSystemKubeConfig retrieves the given kube context from system-level
+// Kubernetes config (e.g. ~/.kube/config).  Use the empty string to retrieve
+// the default context.
 func GetSystemKubeConfig(kcontext string) (*rest.Config, error) {
 
 	overrides := clientcmd.ConfigOverrides{}
@@ -45,7 +47,7 @@ func GetSystemKubeConfig(kcontext string) (*rest.Config, error) {
 	return restConfig, nil
 }
 
-// setRateLimitOnRestConfig: set the QPS and Burst of the rest config
+// setRateLimitOnRestConfig sets the QPS and Burst for the rest config
 func setRateLimitOnRestConfig(restConfig *rest.Config) error {
 	if restConfig != nil {
 		// Prevent rate limiting of our requests

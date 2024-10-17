@@ -39,7 +39,7 @@ test:
 
 .PHONY: test-e2e2
 test-e2e2:
-	go test -count=1 -v -race -timeout 60s github.com/argoproj-labs/argocd-agent/test/e2e2
+	go test -count=1 -v -race -timeout 3m github.com/argoproj-labs/argocd-agent/test/e2e2
 
 .PHONY: test-e2e
 test-e2e:

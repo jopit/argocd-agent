@@ -30,89 +30,6 @@ type BasicTestSuite struct {
 	fixture.BaseSuite
 }
 
-func (suite *BasicTestSuite) Test_1() {
-	requires := suite.Require()
-
-	// Create a managed application in the principal's cluster
-	app := argoapp.Application{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "guestbook",
-			Namespace: "agent-managed",
-		},
-		Spec: argoapp.ApplicationSpec{
-			Project: "default",
-			Source: &argoapp.ApplicationSource{
-				RepoURL:        "https://github.com/argoproj/argocd-example-apps",
-				TargetRevision: "HEAD",
-				Path:           "kustomize-guestbook",
-			},
-			Destination: argoapp.ApplicationDestination{
-				Server:    "https://kubernetes.default.svc",
-				Namespace: "guestbook",
-			},
-			SyncPolicy: &argoapp.SyncPolicy{
-				SyncOptions: argoapp.SyncOptions{
-					"CreateNamespace=true",
-				},
-			},
-		},
-	}
-	err := suite.PrincipalClient.Create(suite.Ctx, &app, metav1.CreateOptions{})
-	requires.NoError(err)
-
-	key := fixture.ToNamespacedName(&app)
-
-	// Ensure the app has been pushed to the managed-agent
-	requires.Eventually(func() bool {
-		app := argoapp.Application{}
-		err := suite.ManagedAgentClient.Get(suite.Ctx, key, &app, metav1.GetOptions{})
-		return err == nil
-	}, 30*time.Second, 1*time.Second)
-}
-
-func (suite *BasicTestSuite) Test_2() {
-	requires := suite.Require()
-
-	// Create an autonomous application on the autonomous-agent's cluster
-	app := argoapp.Application{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "guestbook",
-			Namespace: "argocd",
-			Finalizers: []string{
-				"resources-finalizer.argocd.argoproj.io",
-			},
-		},
-		Spec: argoapp.ApplicationSpec{
-			Project: "default",
-			Source: &argoapp.ApplicationSource{
-				RepoURL:        "https://github.com/argoproj/argocd-example-apps",
-				TargetRevision: "HEAD",
-				Path:           "kustomize-guestbook",
-			},
-			Destination: argoapp.ApplicationDestination{
-				Server:    "https://kubernetes.default.svc",
-				Namespace: "guestbook",
-			},
-			SyncPolicy: &argoapp.SyncPolicy{
-				SyncOptions: argoapp.SyncOptions{
-					"CreateNamespace=true",
-				},
-			},
-		},
-	}
-	err := suite.AutonomousAgentClient.Create(suite.Ctx, &app, metav1.CreateOptions{})
-	requires.NoError(err)
-
-	key := types.NamespacedName{Name: app.Name, Namespace: "agent-autonomous"}
-
-	// Ensure the app has been pushed to the principal
-	requires.Eventually(func() bool {
-		app := argoapp.Application{}
-		err := suite.PrincipalClient.Get(suite.Ctx, key, &app, metav1.GetOptions{})
-		return err == nil
-	}, 30*time.Second, 1*time.Second)
-}
-
 func (suite *BasicTestSuite) Test_Agent_Managed() {
 	requires := suite.Require()
 
@@ -160,7 +77,7 @@ func (suite *BasicTestSuite) Test_Agent_Managed() {
 	requires.Eventually(func() bool {
 		app := argoapp.Application{}
 		err := suite.ManagedAgentClient.Get(suite.Ctx, key, &app, metav1.GetOptions{})
-		return err != nil && errors.IsNotFound(err)
+		return errors.IsNotFound(err)
 	}, 30*time.Second, 1*time.Second)
 }
 
@@ -214,10 +131,10 @@ func (suite *BasicTestSuite) Test_Agent_Autonomous() {
 	requires.Eventually(func() bool {
 		app := argoapp.Application{}
 		err := suite.PrincipalClient.Get(suite.Ctx, key, &app, metav1.GetOptions{})
-		return err != nil && errors.IsNotFound(err)
+		return errors.IsNotFound(err)
 	}, 30*time.Second, 1*time.Second)
 }
 
-func TestBasiceTestSuite(t *testing.T) {
+func TestBasicTestSuite(t *testing.T) {
 	suite.Run(t, new(BasicTestSuite))
 }
