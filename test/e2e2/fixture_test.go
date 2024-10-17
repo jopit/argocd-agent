@@ -493,6 +493,51 @@ func (suite *FixtureTestSuite) Test_Patch_Application() {
 	requires.NoError(err)
 }
 
+func (suite *FixtureTestSuite) Test_SyncApplication() {
+	requires := suite.Require()
+
+	ctx := context.Background()
+
+	config, err := fixture.GetSystemKubeConfig("")
+	requires.NoError(err)
+
+	kclient, err := fixture.NewKubeClient(config)
+	requires.NoError(err)
+
+	app := argoapp.Application{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "foo",
+			Namespace: "test-argocd-agent",
+		},
+		Spec: argoapp.ApplicationSpec{
+			Source: &argoapp.ApplicationSource{
+				RepoURL:        "https://github.com/argoproj/argocd-example-apps",
+				TargetRevision: "HEAD",
+				Path:           "kustomize-guestbook",
+			},
+			Destination: argoapp.ApplicationDestination{
+				Server:    "https://kubernetes.default.svc",
+				Namespace: "foo",
+			},
+		},
+	}
+	err = kclient.Create(ctx, &app, metav1.CreateOptions{})
+	requires.NoError(err)
+
+	key := fixture.ToNamespacedName(&app)
+
+	err = fixture.SyncApplication(ctx, key, kclient)
+	requires.NoError(err)
+
+	app = argoapp.Application{}
+	err = kclient.Get(ctx, key, &app, metav1.GetOptions{})
+	requires.NoError(err)
+	requires.NotNil(app.Operation)
+
+	err = kclient.Delete(ctx, &app, metav1.DeleteOptions{})
+	requires.NoError(err)
+}
+
 func TestFixtureTestSuite(t *testing.T) {
 	suite.Run(t, new(FixtureTestSuite))
 }
