@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - 'main'
+      - 'gitops-5159-e2e-test-framework'
   pull_request:
     branches:
       - 'main'
@@ -120,4 +121,65 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: test/out/coverage.out
 
-
+  test-e2e:
+    name: Run end-to-end tests
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        k3s:
+          - version: v1.31.0
+            # We designate the latest version because we only collect code coverage for that version.
+            latest: true
+    needs:
+      - build-go
+    env:
+      GOPATH: /home/runner/go
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Setup Golang
+        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+        with:
+          go-version: ${{ env.GOLANG_VERSION }}
+      - name: GH actions workaround - Kill XSP4 process
+        run: |
+          sudo pkill mono || true
+      - name: Install K3S
+        env:
+          INSTALL_K3S_VERSION: ${{ matrix.k3s.version }}+k3s1
+        run: |
+          set -x
+          curl -sfL https://get.k3s.io | sh -
+          sudo chmod -R a+rw /etc/rancher/k3s
+          sudo mkdir -p $HOME/.kube && sudo chown -R runner $HOME/.kube
+          sudo k3s kubectl config view --raw > $HOME/.kube/config
+          sudo chown runner $HOME/.kube/config
+          sudo chmod go-r $HOME/.kube/config
+          kubectl version
+      - name: Restore go build cache
+        uses: actions/cache@13aacd865c20de90d75de3b17ebe84f7a17d57d2 # v4.0.0
+        with:
+          path: ~/.cache/go-build
+          key: ${{ runner.os }}-go-build-v1-${{ github.run_id }}
+      - name: Add ~/go/bin to PATH
+        run: |
+          echo "/home/runner/go/bin" >> $GITHUB_PATH
+      - name: Add /usr/local/bin to PATH
+        run: |
+          echo "/usr/local/bin" >> $GITHUB_PATH
+      - name: Download Go dependencies
+        run: |
+          go mod download
+          go install github.com/mattn/goreman@latest
+      - name: Set up the test environment
+        run: |
+          make setup-e2e
+      - name: Run the principal and agents
+        run: |
+          make start-argocd-agent &
+      - name: Run the e2e tests
+        run: |
+          make test-e2e2
+          goreman run stop-all || echo "goreman trouble"
+          sleep 30
