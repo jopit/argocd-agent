@@ -145,7 +145,7 @@ jobs:
       - name: GH actions workaround - Kill XSP4 process
         run: |
           sudo pkill mono || true
-      - name: Install K3S
+      - name: Install microk8s
         env:
           INSTALL_K3S_VERSION: ${{ matrix.k3s.version }}+k3s1
         run: |
