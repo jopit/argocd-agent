@@ -22,7 +22,7 @@
 # weak.
 ##############################################################################
 
-set -eo pipefail
+set -xeo pipefail
 if ! pwmake=$(which pwmake); then
 	pwmake=$(which pwgen)
 fi
