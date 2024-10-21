@@ -124,13 +124,6 @@ jobs:
   test-e2e:
     name: Run end-to-end tests
     runs-on: ubuntu-22.04
-    strategy:
-      fail-fast: false
-      matrix:
-        k3s:
-          - version: v1.31.0
-            # We designate the latest version because we only collect code coverage for that version.
-            latest: true
     needs:
       - build-go
     env:
@@ -149,8 +142,6 @@ jobs:
         run: |
           sudo pkill mono || true
       - name: Install microk8s
-        env:
-          INSTALL_K3S_VERSION: ${{ matrix.k3s.version }}+k3s1
         run: |
           set -x
           sudo snap install --classic microk8s
