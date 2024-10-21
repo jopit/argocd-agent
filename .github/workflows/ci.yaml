@@ -124,8 +124,6 @@ jobs:
   test-e2e:
     name: Run end-to-end tests
     runs-on: ubuntu-22.04
-    needs:
-      - build-go
     env:
       GOPATH: /home/runner/go
     steps:
