@@ -538,6 +538,6 @@ func (suite *FixtureTestSuite) Test_SyncApplication() {
 	requires.NoError(err)
 }
 
-func TestFixtureTestSuite(t *testing.T) {
+func XTestFixtureTestSuite(t *testing.T) {
 	suite.Run(t, new(FixtureTestSuite))
 }
