@@ -136,6 +136,9 @@ jobs:
     env:
       GOPATH: /home/runner/go
     steps:
+      - name: Install required packages
+        run: |
+          sudo apt-get install libpwquality-tools
       - name: Checkout code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Generate credentials
