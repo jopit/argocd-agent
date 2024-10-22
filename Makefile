@@ -26,11 +26,11 @@ build: agent principal
 
 .PHONY: setup-e2e
 setup-e2e:
-	hack/demo-env/setup-vcluster-env.sh create
+	test/e2e2/test-env/setup-vcluster-env.sh create
 
 .PHONY: start-argocd-agent
 start-argocd-agent:
-	goreman -f hack/demo-env/Procfile start
+	goreman -f test/e2e2/test-env/Procfile start
 
 .PHONY: test
 test:

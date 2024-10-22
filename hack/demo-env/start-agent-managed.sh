@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Copyright 2024 The argocd-agent Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

@@ -174,7 +174,7 @@ jobs:
           make setup-e2e
       - name: Generate credentials
         run: |
-          hack/demo-env/gen-creds.sh
+          test/e2e2/test-env/gen-creds.sh
       - name: Run the principal and agents
         run: |
           make start-argocd-agent 2>&1 | sed -r "s/[[:cntrl:]]\[[0-9]{1,3}m//g" > /tmp/e2e-argocd-agent.log &

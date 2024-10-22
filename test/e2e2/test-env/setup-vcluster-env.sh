@@ -61,8 +61,9 @@ check_for_openshift() {
 # wait_for_pods looks all Pods running in k8s context $1, and keeps waiting until running count == $2. 
 wait_for_pods() {
 
-	set +e
+    set +e
 
+    count=0
     while [ true ]
     do
 
@@ -75,12 +76,20 @@ wait_for_pods() {
             break
         fi
 
+        count=$((count+1))
+        if [[ $count -eq 36 ]]; then
+            echo "  -> Timed out waiting for pods to be running."
+            kubectl describe pods --context="$1" -n argocd
+            echo "  -> Exiting due to timeout waiting for pods to be running."
+            exit 1
+        fi
+
         sleep 5
     done
 
     echo "  -> Done waiting for $1 pods."
 
-	set -e
+    set -e
 }
 
 
@@ -206,6 +215,7 @@ create)
 		cluster=$(cluster $c)
  		echo "  --> Creating vcluster $cluster"
 		vcluster create --context=${initial_context} ${EXTRA_VCLUSTER_PARAMS} -n vcluster-${cluster} --expose --kube-config-context-name vcluster-${cluster} vcluster-${cluster}
+		kubectl config use-context ${initial_context}
 
 		# I found a sleep statement here was beneficial to allow time for the load balancer to become available. If we find this is not required, these commented out lines should be removed.
 		# if [[ "$OPENSHIFT" != "" ]]; then
