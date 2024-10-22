@@ -1,10 +1,10 @@
 # There are dragons beyond this point
 
-**WARNING:*** The scripts in this directory are not supposed to be used anywhere except for development or demo purposes. 
+**WARNING:*** The scripts in this directory are not supposed to be used anywhere except for development or testing. 
 
 ## Description
 
-This directory and sub-directories contain scripts, kustomize manifests and other stuff that allow you to set-up a development and demo environment for `argocd-agent`. It comes without warranty. Running any of these scripts can fiddle with your connected cluster up to the point of no return, could break things on your local system, etc etc.
+This directory and sub-directories contain scripts, kustomize manifests and other stuff that allow you to set-up a test environment for `argocd-agent`. It comes without warranty. Running any of these scripts can fiddle with your connected cluster up to the point of no return, could break things on your local system, etc etc.
 
 The scripts are targeting the author's development system. Do not run them against yours or be prepared to dive into undocumented configuration and to clean up after yourself.
 
