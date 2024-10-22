@@ -15,6 +15,26 @@ permissions:
   contents: read
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.filter.outputs.code_any_changed }}
+      docs: ${{ steps.filter.outputs.docs_any_changed }}
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: tj-actions/changed-files@c3a1bb2c992d77180ae65be6ae6c166cf40f857c # v45.0.3
+        id: filter
+        with:
+          files_yaml: |
+            code:
+              - '!**.md'
+              - '!**/*.md'
+              - '!docs/**'
+              - '!Dockerfile.*'
+              - '!hack/**'
+            docs:
+              - 'docs/**'
+
   check-go:
     name: Check go modules synchronicity
     runs-on: ubuntu-22.04
@@ -59,7 +79,10 @@ jobs:
       pull-requests: read  # for golangci/golangci-lint-action to fetch pull requests
       checks: write
     name: Lint Go code
+    if: ${{ needs.changes.outputs.code == 'true' }}
     runs-on: ubuntu-22.04
+    needs:
+      - changes
     steps:
       - name: Checkout code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -76,7 +99,10 @@ jobs:
 
   build-go:
     name: Build & cache Go code
+    if: ${{ needs.changes.outputs.code == 'true' }}
     runs-on: ubuntu-22.04
+    needs:
+      - changes
     steps:
       - name: Checkout code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -97,7 +123,10 @@ jobs:
 
   test:
     name: Run unit tests
+    if: ${{ needs.changes.outputs.code == 'true' }}
     runs-on: ubuntu-22.04
+    needs:
+      - changes
     steps:
       - name: Checkout code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -123,7 +152,10 @@ jobs:
 
   test-e2e:
     name: Run end-to-end tests
+    if: ${{ needs.changes.outputs.code == 'true' }}
     runs-on: ubuntu-22.04
+    needs:
+      - changes
     env:
       GOPATH: /home/runner/go
     steps:
